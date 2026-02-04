@@ -1,0 +1,52 @@
+mkdir build
+cd build
+
+cmake .. \
+  -DCOMPILE_OPENMP=1 \
+  -DCOMPILE_MPI=0 \
+  -DCOMPILE_CUDA=0 \
+  -DCOMPILE_CUQUANTUM=0 \
+  -DCOMPILE_ZE=0 \
+  -DCOMPILE_KOKKOS=0
+
+make -j
+
+g++ ../simulate_bell.cpp \
+    -I../quest/include \
+    -L. -lQuEST -lm -fopenmp \
+    -pg -DCOMPILE_OPENMP=1 \
+    -DCOMPILE_MPI=0 \
+    -DCOMPILE_CUDA=0 \
+    -DCOMPILE_CUQUANTUM=0 \
+    -DCOMPILE_ZE=0 \
+    -DCOMPILE_KOKKOS=0 \
+    -o output1
+    
+    
+ g++ ../HEA.cpp \
+    -I../quest/include \
+    -L. -lQuEST -lm -fopenmp \
+    -pg -DCOMPILE_OPENMP=1 \
+    -DCOMPILE_MPI=0 \
+    -DCOMPILE_CUDA=0 \
+    -DCOMPILE_CUQUANTUM=0 \
+    -DCOMPILE_ZE=0 \
+    -DCOMPILE_KOKKOS=0 \
+    -o output1   
+    
+  ##parallel execution
+  g++ ../HEA_parallel.cpp \
+    -I../quest/include -L. -lQuEST -lm -fopenmp \
+    -pg -DCOMPILE_OPENMP=1 \
+    -DCOMPILE_MPI=0 \
+    -DCOMPILE_CUDA=0 \
+    -DCOMPILE_CUQUANTUM=0 \
+    -DCOMPILE_ZE=0 \
+    -DCOMPILE_KOKKOS=0 \
+    -o output1
+    
+LD_LIBRARY_PATH=. ./output1
+
+gprof ./output1 gmon.out > analysis.txt
+
+less analysis.txt
