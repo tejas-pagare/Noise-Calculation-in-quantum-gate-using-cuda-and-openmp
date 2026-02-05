@@ -14,6 +14,18 @@
 
 cmake_minimum_required(VERSION 3.21)
 
+# 1. Enable Profiling Flags (Add -pg)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pg")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -pg")
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -pg")
+
+# 2. Disable Multithreading (Force Sequential)
+# This ensures OpenMP does not interfere with the baseline profile
+set(MULTITHREADED 0) 
+set(DISTRIBUTED 0)
+set(GPUACCELERATED 0)
+
+
 project(QuEST
   VERSION 4.0.0
   DESCRIPTION "Quantum Exact Simulation Toolkit"
@@ -533,3 +545,13 @@ install(EXPORT QuESTTargets
         NAMESPACE QuEST::
         DESTINATION "${QuEST_INSTALL_CONFIGDIR}"
 )
+
+
+# 1. Create the executable
+add_executable(hea_density_seq HEA_density_Seq_vs_Par.cpp)
+
+# 2. Link the QuEST library (gives you the functions)
+target_link_libraries(hea_density_seq QuEST)
+
+# 3. [NEW LINE] Explicitly tell it where 'quest.h' is (gives you the header)
+target_include_directories(hea_density_seq PRIVATE quest/include)
