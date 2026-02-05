@@ -40,10 +40,15 @@ cd build_cuda
 
 ### Step 3: Configure CMake with CUDA enabled
 ```bash
+# First, find your GPU compute capability
+nvidia-smi --query-gpu=compute_cap --format=csv
+
+# Then configure with the appropriate architecture (e.g., 75 for RTX 20xx/GTX 16xx)
 cmake .. \
     -DENABLE_CUDA=ON \
     -DENABLE_MULTITHREADING=OFF \
     -DENABLE_DISTRIBUTION=OFF \
+    -DCMAKE_CUDA_ARCHITECTURES=75 \
     -DCMAKE_BUILD_TYPE=Release
 ```
 
@@ -53,7 +58,23 @@ cmake .. \
 | `ENABLE_CUDA` | ON | Enable NVIDIA GPU acceleration |
 | `ENABLE_MULTITHREADING` | OFF | Disable OpenMP (single thread) |
 | `ENABLE_DISTRIBUTION` | OFF | Disable MPI |
+| `CMAKE_CUDA_ARCHITECTURES` | 75 | **REQUIRED** - Your GPU compute capability |
 | `CMAKE_BUILD_TYPE` | Release | Optimized build |
+
+**CUDA Architecture Reference:**
+| GPU Series | Architecture Code |
+|------------|------------------|
+| GTX 10xx (Pascal) | 61 |
+| GTX 16xx, RTX 20xx (Turing) | 75 |
+| RTX 30xx (Ampere) | 86 |
+| RTX 40xx (Ada Lovelace) | 89 |
+| Tesla V100 | 70 |
+| A100 | 80 |
+
+**Or use "native" for auto-detection (CMake 3.24+):**
+```bash
+cmake .. -DENABLE_CUDA=ON -DENABLE_MULTITHREADING=OFF -DENABLE_DISTRIBUTION=OFF -DCMAKE_CUDA_ARCHITECTURES=native
+```
 
 ### Step 4: Build the QuEST library
 ```bash

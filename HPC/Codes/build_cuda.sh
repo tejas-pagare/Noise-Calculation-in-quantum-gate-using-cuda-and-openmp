@@ -35,11 +35,16 @@ CMAKE_VERSION=$(cmake --version | head -n1)
 echo -e "${GREEN}✓ CMake found:${NC} $CMAKE_VERSION"
 
 # Check GPU
+CUDA_ARCH="75"  # Default to Turing architecture
 if command -v nvidia-smi &> /dev/null; then
     GPU_NAME=$(nvidia-smi --query-gpu=name --format=csv,noheader 2>/dev/null | head -n1)
-    echo -e "${GREEN}✓ GPU found:${NC} $GPU_NAME"
+    COMPUTE_CAP=$(nvidia-smi --query-gpu=compute_cap --format=csv,noheader 2>/dev/null | head -n1 | tr -d '.')
+    if [ -n "$COMPUTE_CAP" ]; then
+        CUDA_ARCH="$COMPUTE_CAP"
+    fi
+    echo -e "${GREEN}✓ GPU found:${NC} $GPU_NAME (Compute Capability: $CUDA_ARCH)"
 else
-    echo -e "${YELLOW}WARNING: nvidia-smi not found. GPU may not be available.${NC}"
+    echo -e "${YELLOW}WARNING: nvidia-smi not found. Using default architecture $CUDA_ARCH${NC}"
 fi
 
 # Determine QuEST directory
@@ -60,11 +65,12 @@ mkdir -p "$BUILD_DIR"
 cd "$BUILD_DIR"
 
 # Configure CMake
-echo -e "\n${YELLOW}Configuring CMake with CUDA...${NC}"
+echo -e "\n${YELLOW}Configuring CMake with CUDA (Architecture: $CUDA_ARCH)...${NC}"
 cmake .. \
     -DENABLE_CUDA=ON \
     -DENABLE_MULTITHREADING=OFF \
     -DENABLE_DISTRIBUTION=OFF \
+    -DCMAKE_CUDA_ARCHITECTURES=$CUDA_ARCH \
     -DCMAKE_BUILD_TYPE=Release
 
 # Build QuEST library
